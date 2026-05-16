@@ -563,6 +563,10 @@ class ChatUI {
             // Default fallback to page object generation
             if (this.isJavaSelenium(lang, eng)) {
                 promptKeys.push('SELENIUM_JAVA_PAGE_ONLY');
+            } else if (this.isPythonSelenium(lang, eng)) {
+                promptKeys.push('SELENIUM_PYTHON_PAGE_ONLY');
+            } else if (this.isPlaywrightPython(lang, eng)) {
+                promptKeys.push('PLAYWRIGHT_PYTHON_PAGE_ONLY');
             }
             return promptKeys;
         }
@@ -572,8 +576,12 @@ class ChatUI {
             // Both feature and page selected - generate combined output
             if (this.isJavaSelenium(lang, eng)) {
                 promptKeys.push('CUCUMBER_WITH_SELENIUM_JAVA_STEPS');
+            } else if (this.isPythonSelenium(lang, eng)) {
+                promptKeys.push('CUCUMBER_WITH_SELENIUM_PYTHON_STEPS');
+            } else if (this.isPlaywrightPython(lang, eng)) {
+                promptKeys.push('CUCUMBER_WITH_PLAYWRIGHT_PYTHON_STEPS');
             } else {
-                // For non-Java/Selenium combinations, generate separately
+                // For unsupported combinations, generate feature only
                 promptKeys.push('CUCUMBER_ONLY');
                 this.addUnsupportedLanguageMessage(lang, eng);
             }
@@ -584,6 +592,10 @@ class ChatUI {
             // Page object only
             if (this.isJavaSelenium(lang, eng)) {
                 promptKeys.push('SELENIUM_JAVA_PAGE_ONLY');
+            } else if (this.isPythonSelenium(lang, eng)) {
+                promptKeys.push('SELENIUM_PYTHON_PAGE_ONLY');
+            } else if (this.isPlaywrightPython(lang, eng)) {
+                promptKeys.push('PLAYWRIGHT_PYTHON_PAGE_ONLY');
             } else {
                 this.addUnsupportedLanguageMessage(lang, eng);
             }
@@ -604,7 +616,11 @@ class ChatUI {
     }
 
     isPythonSelenium(language, engine) {
-        return language === 'python' && engine === 'selenium';
+        return language === 'py' && engine === 'selenium';
+    }
+
+    isPlaywrightPython(language, engine) {
+        return language === 'py' && engine === 'playwright';
     }
 
     // typescript/selenium not supported by the selenium webdriver
@@ -615,7 +631,26 @@ class ChatUI {
      * Helper method to show unsupported language/engine combination message
      */
     addUnsupportedLanguageMessage(language, engine) {
-        const message = `⚠️ ${language}/${engine} combination is not yet supported. Only Java/Selenium is currently available.`;
+        // Map language codes to friendly names
+        const languageMap = {
+            'java': 'Java',
+            'py': 'Python',
+            'csharp': 'C#',
+            'ts': 'TypeScript'
+        };
+        
+        // Map engine codes to friendly names
+        const engineMap = {
+            'selenium': 'Selenium',
+            'playwright': 'Playwright',
+            'cypress': 'Cypress',
+            'puppeteer': 'Puppeteer'
+        };
+        
+        const friendlyLang = languageMap[language] || language;
+        const friendlyEngine = engineMap[engine] || engine;
+        
+        const message = `⚠️ ${friendlyLang}/${friendlyEngine} combination is not yet supported. Currently supported: Java/Selenium, Python/Selenium, Python/Playwright.`;
         this.addMessage(message, 'system');
     }
 
